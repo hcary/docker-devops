@@ -1,5 +1,5 @@
 # Latest version of centos
-FROM ubuntu:16.04
+FROM rc3labs/ubuntu
 MAINTAINER Harvey Cary (hcary@rc3labs.com)
 RUN apt-get update
 RUN apt-get install -y software-properties-common 
