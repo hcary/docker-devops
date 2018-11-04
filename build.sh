@@ -1,8 +1,8 @@
 #!/bin/bash
 
-build_num=`cat build.num`
+build_num=`cat build_num.txt`
 newnum=`expr $build_num + 1`
-echo $newnum >  build.num
+echo $newnum >  build_num.txt
 
 export build_num=$newnum
 
