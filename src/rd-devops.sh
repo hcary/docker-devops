@@ -10,6 +10,7 @@ echo
 
 docker run \
     --name $USER.$$ \
+    --hostname "devops" \
     -e "MYUSER=$MYUSER" \
     -e "MYUID=$MYUID" \
     -it \
