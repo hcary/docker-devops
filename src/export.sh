@@ -7,5 +7,8 @@ image=att/devops
 echo "Exporting ${image} to ${output}"
 sudo docker image save ${image} -o ${output}
 
-echo "Gzipping ${output}"
-gzip ${export_dt}-att-devops.tar
+if [ "$1" == "x" ];
+then
+	echo "Gzipping ${output}"
+	gzip ${export_dt}-att-devops.tar
+fi
