@@ -10,13 +10,13 @@ else
 fi
 
 DEST=/home/$MYUSER
-company=rc3labs
+company=att
 
 echo "Loading a container named $USER.$$ from anstra-ansible container..."
 echo "User will be: " $MYUSER "with UID: " $MYUID
 echo
 
-docker run \
+sudo docker run \
     --name $USER.$$ \
     --hostname "devops" \
     -e "MYUSER=$MYUSER" \
