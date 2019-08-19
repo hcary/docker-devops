@@ -1,21 +1,17 @@
-# Latest version of centos
-FROM ubuntu:latest
+ARG  CODE_VERSION=18.04
+FROM ubuntu:${CODE_VERSION}
 
-ARG build_num
-ARG version
-ARG maintainer 
-ARG author
-ARG company
-ARG chefdk_file
-ARG python_ver
+
 
 RUN apt-get update -y
 RUN apt-get install -y software-properties-common 
 RUN apt-add-repository -y ppa:ansible/ansible
 RUN apt-get update
-RUN apt-get install -y ansible git iputils-ping unzip python-pip
-RUN apt-get install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev python3-pip
-RUN pip3 install boto3
+RUN apt-get install -y ansible git iputils-ping unzip python-pip  python3-pip tar unzip python3
+# build-essential zlib1g-dev  libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
+CMD echo About to install boto3
+#RUN pip3 install boto3
+RUN pip install boto3
 
 #
 #
@@ -26,34 +22,24 @@ RUN chmod +x /usr/local/bin/user-setup.sh
 #
 # Add AWS command line tools
 #ADD awscli-bundle.zip /tmp
-ADD https://s3.amazonaws.com/aws-cli/awscli-bundle.zip /tmp
+ADD https://s3.amazonaws.com/aws-cli/awscli-bundle.zip /tmp/
 WORKDIR /tmp
 RUN unzip awscli-bundle.zip
 WORKDIR /tmp/awscli-bundle
 RUN ./install -i /usr/local/aws -b /usr/local/bin/aws
 
-#
-# Install Python3
-#ADD ${python_file} /tmp
-#WORKDIR /tmp
-#RUN tar -xf Python-${python_ver}.tar.xz
-#WORKDIR /tmp/Python-${python_ver}
-#RUN ./configure --enable-optimizations
-#RUN make -j 4
-#RUN make altinstall
-#RUN ln -s /usr/local/bin/python3.7 /usr/local/bin/python3
+WORKDIR /tmp
+ADD https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/kubectl /usr/bin/
+RUN chmod +x /usr/bin/kubectl
 
-COPY bin/* /usr/local/bin/
-# 
-# Add Kubernetes
-#ADD kubectl /usr/local/bin/kubectl
-RUN chmod +x /usr/local/bin/*
+ADD https://amazon-eks.s3-us-west-2.amazonaws.com/1.13.7/2019-06-11/bin/darwin/amd64/aws-iam-authenticator /usr/bin/
+RUN chmod +x /usr/bin/aws-iam-authenticator
 
-#
-# Add Chef DK to image
-#ADD ${chefdk_file} /tmp
-#RUN apt-get install -y /tmp/${chefdk_file}
+ADD https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_Linux_amd64.tar.gz /tmp/
+RUN tar xzvf eksctl_Linux_amd64.tar.gz -C /usr/bin/
 
-RUN pip install boto3
+ADD https://releases.hashicorp.com/terraform/0.12.6/terraform_0.12.6_linux_amd64.zip /tmp/
+RUN unzip /tmp/terraform_0.12.6_linux_amd64.zip && mv /tmp/terraform /usr/bin && chmod +x /usr/bin/terraform
+
 
 ENTRYPOINT /usr/local/bin/user-setup.sh
