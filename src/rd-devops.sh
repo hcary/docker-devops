@@ -24,7 +24,7 @@ sudo docker run \
     -it \
     --rm \
     --mount type=bind,src="$(echo $HOME)",dst=/home/"$(echo $USER)" \
-    ${company}/devops \
+    grc/devops \
     /bin/bash
 
 

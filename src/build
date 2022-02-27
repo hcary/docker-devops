@@ -1,0 +1,79 @@
+#!/bin/bash
+
+release=1.0.0
+terraform_versions=("1.1.0" "1.1.2" "1.1.4" "1.1.6")
+image="az-devops"
+
+# release=$(cat version | grep release | sed 's/release = //')
+serial=$(date '+%Y%m%d%H%M%S')
+build_ts=$(date '+%d/%m/%Y %H:%M:%S')
+build_dt=$(date '+%d/%m/%Y')
+
+echo "build date: $build_dt"
+cdir=$(pwd)
+
+rm -rf package
+rm -f package.tgz
+
+#
+# Get and set build number
+build=$(cat build_num)
+newnum=`expr $build + 1`
+echo $newnum > build_num
+
+echo "release: $release"
+echo "  build: $build"
+
+mkdir cache
+mkdir -p package/usr/local/bin
+mkdir -p package/tmp
+
+cd cache
+
+for version  in "${terraform_versions[@]}";
+do
+
+    echo "processing version: ${version}"
+    if [ ! -f terraform_${version}_linux_amd64.zip ];
+    then
+        echo https://releases.hashicorp.com/terraform/${ver}/terraform_${version}_linux_amd64.zip
+        curl -sL https://releases.hashicorp.com/terraform/${version}/terraform_${version}_linux_amd64.zip -o terraform_${version}_linux_amd64.zip
+    fi
+
+    if [ ! -f ../package/usr/local/bin/terraform-${version} ];
+    then
+        unzip terraform_${version}_linux_amd64.zip
+        mv terraform ../package/usr/local/bin/terraform-${version}
+    fi
+
+done
+
+# cd $cdir
+if [ ! -f "${cdir}/package/tmp/packages-microsoft-prod.deb" ];
+then
+    curl -sL https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -o ${cdir}/package/tmp/packages-microsoft-prod.deb
+fi
+
+cd $cdir/package
+tar czvf ../package.tgz *
+
+# export build_num=$newnum
+
+#    --build-arg "chefdk_file=${chefdk_file}" \
+#    --build-arg "python_file=${python_ver}" \
+
+
+cd $cdir
+sudo docker build -t ${image} . \
+    --label "release"="$release" \
+    --label "build"="${build}" \
+    --label "serial"="${serial}" \
+    --label "build_ts"="${build_ts}" \
+    --label "maintainer"="Harvey Cary" \
+    --label "author"="Harvey Cary (hc1324@att.com)" \
+    --label "app-terraform"="${terraform_versions[*]}" \
+    --label "app-az-cli"="latest as of ${build_dt}" \
+    --label "app-:PowerShell"="latest as of ${build_dt}"
+
+# sudo docker history grc/devops
+# sudo docker inspect grc/devops
